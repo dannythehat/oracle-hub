@@ -1,17 +1,21 @@
 {
-    "points":  [
-                   {
-                       "date":  "2025-11-25",
-                       "over25":  0.719,
-                       "corners_over95":  0.919,
-                       "cards_over35":  0.872,
-                       "btts":  0.702
-                   }
-               ],
-    "markets":  [
-                    "over25",
-                    "btts",
-                    "corners_over95",
-                    "cards_over35"
-                ]
+    "updated": "2025-11-25T17:02:43.788296Z",
+    "metrics": {
+        "over25": {
+            "accuracy": 0.719,
+            "auc": 0.814
+        },
+        "btts": {
+            "accuracy": 0.702,
+            "auc": 0.8
+        },
+        "corners_over95": {
+            "accuracy": 0.919,
+            "auc": 0.972
+        },
+        "cards_over35": {
+            "accuracy": 0.872,
+            "auc": 0.946
+        }
+    }
 }
