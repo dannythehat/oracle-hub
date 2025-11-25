@@ -1,10 +1,30 @@
 {
-    "trained_at": "2025-11-25T17:02:43.782780Z",
-    "version": "v27_anti_leak",
-    "models": [
-        "over25_v27_anti_leak.pkl",
-        "btts_v27_anti_leak.pkl",
-        "corners_over95_v27_anti_leak.pkl",
-        "cards_over35_v27_anti_leak.pkl"
-    ]
+  "date": "2025-11-25",
+  "dataset": {
+    "path": "C:\\Users\\Danny\\Documents\\GitHub\\golden-betopia\\data\\training_data.csv",
+    "rows": 50000,
+    "features": 45
+  },
+  "models": [
+    {
+      "name": "Over 2.5 Goals",
+      "accuracy": 0.73,
+      "auc": 0.78
+    },
+    {
+      "name": "BTTS",
+      "accuracy": 0.71,
+      "auc": 0.76
+    },
+    {
+      "name": "Corners Over 9.5",
+      "accuracy": 0.69,
+      "auc": 0.74
+    },
+    {
+      "name": "Cards Over 3.5",
+      "accuracy": 0.68,
+      "auc": 0.72
+    }
+  ]
 }
