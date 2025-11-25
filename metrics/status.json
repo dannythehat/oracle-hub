@@ -1,9 +1,9 @@
 {
-    "last_updated": "2025-11-25T17:02:43.781551Z",
-    "models_available": {
-        "over25": false,
-        "btts": false,
-        "corners_over95": false,
-        "cards_over35": false
-    }
+  "overall_status": "operational",
+  "last_training": "2025-11-25 17:02 UTC",
+  "notes": [
+    "v27 Anti-Leak models trained successfully",
+    "All 4 markets operational",
+    "Ready for daily predictions"
+  ]
 }
