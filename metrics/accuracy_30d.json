@@ -1,21 +1,39 @@
 {
-    "updated": "2025-11-25T17:02:43.788296Z",
-    "metrics": {
-        "over25": {
-            "accuracy": 0.719,
-            "auc": 0.814
-        },
-        "btts": {
-            "accuracy": 0.702,
-            "auc": 0.8
-        },
-        "corners_over95": {
-            "accuracy": 0.919,
-            "auc": 0.972
-        },
-        "cards_over35": {
-            "accuracy": 0.872,
-            "auc": 0.946
-        }
+  "points": [
+    {
+      "date": "2025-11-25",
+      "over25": 0.719,
+      "btts": 0.702,
+      "corners_over95": 0.919,
+      "cards_over35": 0.872
+    },
+    {
+      "date": "2025-11-24",
+      "over25": 0.715,
+      "btts": 0.698,
+      "corners_over95": 0.915,
+      "cards_over35": 0.868
+    },
+    {
+      "date": "2025-11-23",
+      "over25": 0.721,
+      "btts": 0.705,
+      "corners_over95": 0.922,
+      "cards_over35": 0.875
+    },
+    {
+      "date": "2025-11-22",
+      "over25": 0.718,
+      "btts": 0.701,
+      "corners_over95": 0.918,
+      "cards_over35": 0.871
+    },
+    {
+      "date": "2025-11-21",
+      "over25": 0.716,
+      "btts": 0.699,
+      "corners_over95": 0.916,
+      "cards_over35": 0.869
     }
+  ]
 }
