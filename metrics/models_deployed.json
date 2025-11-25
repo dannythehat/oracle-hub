@@ -1,14 +1,32 @@
 {
-    "active_models": {
-        "over25": "over25_v27_anti_leak.pkl",
-        "btts": "btts_v27_anti_leak.pkl",
-        "corners_over95": "corners_over95_v27_anti_leak.pkl",
-        "cards_over35": "cards_over35_v27_anti_leak.pkl"
+  "models": [
+    {
+      "market": "Over 2.5 Goals",
+      "version": "v27",
+      "file": "over25_v27_anti_leak.pkl",
+      "accuracy": 0.719,
+      "auc": 0.814
     },
-    "paths": {
-        "over25": "C:\\Users\\Danny\\football-betting-ai-system\\betopia_v2\\models\\over25_v27_anti_leak.pkl",
-        "btts": "C:\\Users\\Danny\\football-betting-ai-system\\betopia_v2\\models\\btts_v27_anti_leak.pkl",
-        "corners_over95": "C:\\Users\\Danny\\football-betting-ai-system\\betopia_v2\\models\\corners_over95_v27_anti_leak.pkl",
-        "cards_over35": "C:\\Users\\Danny\\football-betting-ai-system\\betopia_v2\\models\\cards_over35_v27_anti_leak.pkl"
+    {
+      "market": "BTTS",
+      "version": "v27",
+      "file": "btts_v27_anti_leak.pkl",
+      "accuracy": 0.702,
+      "auc": 0.800
+    },
+    {
+      "market": "Corners Over 9.5",
+      "version": "v27",
+      "file": "corners_over95_v27_anti_leak.pkl",
+      "accuracy": 0.919,
+      "auc": 0.972
+    },
+    {
+      "market": "Cards Over 3.5",
+      "version": "v27",
+      "file": "cards_over35_v27_anti_leak.pkl",
+      "accuracy": 0.872,
+      "auc": 0.946
     }
+  ]
 }
