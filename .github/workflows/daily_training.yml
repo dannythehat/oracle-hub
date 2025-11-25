@@ -1,0 +1,13 @@
+﻿name: Daily Training Stub
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  stub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo placeholder
+        run: echo "Daily training pipeline will be wired here."

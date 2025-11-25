@@ -1,0 +1,33 @@
+﻿name: Deploy Oracle Hub Dashboard
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "analytics_hub/dashboard/**"
+      - "analytics_hub/metrics/**"
+      - ".github/workflows/deploy_pages.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./analytics_hub/dashboard
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

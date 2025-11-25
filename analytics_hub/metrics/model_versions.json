@@ -1,0 +1,28 @@
+﻿{
+  "models": [
+    {
+      "model_name": "Over 2.5 Goals",
+      "id": "over25_v27_anti_leak",
+      "version": "27.1",
+      "status": "improved"
+    },
+    {
+      "model_name": "BTTS",
+      "id": "btts_v27_anti_leak",
+      "version": "27.0",
+      "status": "stable"
+    },
+    {
+      "model_name": "Corners 9.5+",
+      "id": "corners_over95_v27_anti_leak",
+      "version": "27.0",
+      "status": "stable"
+    },
+    {
+      "model_name": "Cards 3.5+",
+      "id": "cards_over35_v27_anti_leak",
+      "version": "27.0",
+      "status": "stable"
+    }
+  ]
+}
