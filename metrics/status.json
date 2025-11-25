@@ -1,5 +1,10 @@
 {
-  "system_status": "ready",
-  "next_training": "02:00 UTC",
-  "last_training": "2025-11-25T18:00:00Z"
+    "overall_status":  "healthy",
+    "last_training":  "2025-11-25",
+    "system":  "Footy Oracle LM Engine",
+    "notes":  [
+                  "v27 anti-leak models trained from global_training_dataset_v26.csv",
+                  "Canonical stats: C:\\Users\\Danny\\football-betting-ai-system\\footy_oracle_v2\\raw\\match_stats_full (13,430 files)",
+                  "Master fixtures index: footy_oracle_v2/raw/fixtures/fixtures_index.csv (~211k)"
+              ]
 }

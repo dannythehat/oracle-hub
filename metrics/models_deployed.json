@@ -1,6 +1,37 @@
 {
-  "over25": "v27",
-  "btts": "v27",
-  "corners_over95": "v27",
-  "cards_over35": "v27"
+    "updated_at":  "2025-11-25T00:00:00Z",
+    "models":  [
+                   {
+                       "id":  "over25",
+                       "version":  "v27_anti_leak",
+                       "market":  "Over 2.5 Goals",
+                       "auc":  0.814,
+                       "accuracy":  0.719,
+                       "file":  "over25_v27_anti_leak.pkl"
+                   },
+                   {
+                       "id":  "btts",
+                       "version":  "v27_anti_leak",
+                       "market":  "BTTS",
+                       "auc":  0.8,
+                       "accuracy":  0.702,
+                       "file":  "btts_v27_anti_leak.pkl"
+                   },
+                   {
+                       "id":  "corners_over95",
+                       "version":  "v27_anti_leak",
+                       "market":  "Corners Over 9.5",
+                       "auc":  0.972,
+                       "accuracy":  0.919,
+                       "file":  "corners_over95_v27_anti_leak.pkl"
+                   },
+                   {
+                       "id":  "cards_over35",
+                       "version":  "v27_anti_leak",
+                       "market":  "Cards Over 3.5",
+                       "auc":  0.946,
+                       "accuracy":  0.872,
+                       "file":  "cards_over35_v27_anti_leak.pkl"
+                   }
+               ]
 }

@@ -1,6 +1,38 @@
 {
-  "timestamp": "2025-11-25T18:00:00Z",
-  "model_version": "v27",
-  "rows_used": 320464,
-  "features_used": 108
+    "date":  "2025-11-25",
+    "models":  [
+                   {
+                       "accuracy":  0.719,
+                       "auc":  0.814,
+                       "name":  "Over 2.5 Goals",
+                       "id":  "over25",
+                       "file":  "over25_v27_anti_leak.pkl"
+                   },
+                   {
+                       "accuracy":  0.702,
+                       "auc":  0.8,
+                       "name":  "BTTS",
+                       "id":  "btts",
+                       "file":  "btts_v27_anti_leak.pkl"
+                   },
+                   {
+                       "accuracy":  0.919,
+                       "auc":  0.972,
+                       "name":  "Corners Over 9.5",
+                       "id":  "corners_over95",
+                       "file":  "corners_over95_v27_anti_leak.pkl"
+                   },
+                   {
+                       "accuracy":  0.872,
+                       "auc":  0.946,
+                       "name":  "Cards Over 3.5",
+                       "id":  "cards_over35",
+                       "file":  "cards_over35_v27_anti_leak.pkl"
+                   }
+               ],
+    "dataset":  {
+                    "path":  "C:\\Users\\Danny\\football-betting-ai-system\\betopia_v2\\derived\\training\\global_training_dataset_v26.csv",
+                    "rows":  320464,
+                    "features":  108
+                }
 }

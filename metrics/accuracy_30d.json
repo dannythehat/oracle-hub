@@ -1,3 +1,17 @@
-[
-  { "date": "2025-11-25", "over25": 0.71, "btts": 0.70, "corners": 0.92, "cards": 0.87 }
-]
+{
+    "points":  [
+                   {
+                       "date":  "2025-11-25",
+                       "over25":  0.719,
+                       "corners_over95":  0.919,
+                       "cards_over35":  0.872,
+                       "btts":  0.702
+                   }
+               ],
+    "markets":  [
+                    "over25",
+                    "btts",
+                    "corners_over95",
+                    "cards_over35"
+                ]
+}
