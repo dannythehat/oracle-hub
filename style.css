@@ -71,3 +71,5 @@ table td {
   padding: 10px;
   border-bottom: 1px solid #374151;
 }
+
+#oracle-root { display:block !important; width:100% !important; min-height:100vh !important; padding:40px !important; color:white !important; }
