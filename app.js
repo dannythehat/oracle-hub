@@ -1,261 +1,182 @@
-async function loadJSON(path) {
-  try {
-    const res = await fetch(path);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return await res.json();
-  } catch (err) {
-    console.error("Failed to load", path, err);
-    return null;
+const base = "https://dannythehat.github.io/oracle-hub/metrics";
+
+async function fetchJSON(name) {
+  const url = `${base}/${name}.json?cacheBust=${Date.now()}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to load ${name} from ${url}`);
   }
+  return res.json();
 }
 
-function setSystemStatus(status) {
-  const dot = document.getElementById("system-status-dot");
-  const text = document.getElementById("system-status-text");
-  const lastTraining = document.getElementById("last-training-time");
-  const modelsDeployed = document.getElementById("models-deployed");
-  const nextTraining = document.getElementById("next-training-time");
+function ensureLayout() {
+  let root = document.getElementById("oracle-root");
+  if (!root) {
+    root = document.createElement("div");
+    root.id = "oracle-root";
+    root.className = "oracle-root";
+    root.innerHTML = `
+      <header class="hub-header">
+        <h1>?? Footy Oracle — LM Training Hub</h1>
+        <p class="subtitle">Live v27 anti-leak LM babies • Footy Oracle Premium</p>
+      </header>
 
-  if (!status) {
-    dot.style.background = "#f97316";
-    dot.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.8)";
-    text.textContent = "No status data";
-    return;
-  }
+      <main class="hub-main">
+        <section class="card" id="status-card">
+          <h2>System Status</h2>
+          <p id="status-text">Loading...</p>
+          <ul id="status-notes"></ul>
+        </section>
 
-  if (status.system_status === "online") {
-    dot.style.background = "#22c55e";
-    dot.style.boxShadow = "0 0 10px rgba(34, 197, 94, 0.9)";
-    text.textContent = "Online · " + (status.environment || "prod");
-  } else {
-    dot.style.background = "#f97316";
-    dot.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.9)";
-    text.textContent = status.system_status || "Degraded";
-  }
+        <section class="card" id="training-card">
+          <h2>Last Training Run</h2>
+          <p id="last-training-date"></p>
+          <p id="last-training-dataset"></p>
+          <ul id="last-training-models"></ul>
+        </section>
 
-  lastTraining.textContent = status.last_training || "–";
-  modelsDeployed.textContent = status.models_deployed ?? "–";
-  if (status.next_training_utc) {
-    nextTraining.textContent = status.next_training_utc + " UTC";
-  }
-}
+        <section class="card" id="models-card">
+          <h2>Models Deployed (v27 anti-leak)</h2>
+          <table id="models-table">
+            <thead>
+              <tr>
+                <th>Market</th>
+                <th>Version</th>
+                <th>PKL</th>
+                <th>Accuracy</th>
+                <th>AUC</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
 
-function renderBabyCards(accuracyData, aucData) {
-  const grid = document.getElementById("baby-grid");
-  grid.innerHTML = "";
-
-  const models = ["over25", "btts", "corners_over95", "cards_over35"];
-  const names = {
-    over25: "Over 2.5 Goals",
-    btts: "BTTS",
-    corners_over95: "Corners 9.5+",
-    cards_over35: "Cards 3.5+"
-  };
-
-  models.forEach((m) => {
-    const acc = accuracyData?.current?.[m];
-    const auc = aucData?.current?.[m];
-
-    const card = document.createElement("div");
-    card.className = "oh-baby-card";
-
-    card.innerHTML = `
-      <div class="oh-baby-header">
-        <div class="oh-baby-name">${names[m] || m}</div>
-        <div class="oh-baby-tag">Production</div>
-      </div>
-      <div class="oh-baby-metrics">
-        <div>
-          <div class="oh-baby-metric-label">Accuracy</div>
-          <div class="oh-baby-metric-value">${acc != null ? (acc * 100).toFixed(1) + "%" : "–"}</div>
-        </div>
-        <div>
-          <div class="oh-baby-metric-label">AUC</div>
-          <div class="oh-baby-metric-value">${auc != null ? auc.toFixed(3) : "–"}</div>
-        </div>
-      </div>
-      <div class="oh-baby-chip-row">
-        <div class="oh-baby-chip">ID: ${m}</div>
-        <div class="oh-baby-chip">Role: Core LM Baby</div>
-      </div>
+        <section class="card" id="accuracy-card">
+          <h2>Last 30 Days — Accuracy</h2>
+          <table id="accuracy-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Over 2.5</th>
+                <th>BTTS</th>
+                <th>Corners 9.5</th>
+                <th>Cards 3.5</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </main>
     `;
+    document.body.appendChild(root);
+  }
+  return root;
+}
 
-    grid.appendChild(card);
+function renderStatus(data) {
+  const statusText = document.getElementById("status-text");
+  const notesList = document.getElementById("status-notes");
+  if (!data || !statusText || !notesList) return;
+
+  const label = data.overall_status || "unknown";
+  const last = data.last_training || "n/a";
+  statusText.textContent = `${label.toUpperCase()} — last training ${last}`;
+
+  notesList.innerHTML = "";
+  (data.notes || []).forEach((n) => {
+    const li = document.createElement("li");
+    li.textContent = n;
+    notesList.appendChild(li);
   });
 }
 
-function renderTimeline(history) {
-  const root = document.getElementById("training-timeline");
-  root.innerHTML = "";
+function renderLastTraining(data) {
+  const dateEl = document.getElementById("last-training-date");
+  const dsEl = document.getElementById("last-training-dataset");
+  const modelsList = document.getElementById("last-training-models");
+  if (!data || !dateEl || !dsEl || !modelsList) return;
 
-  if (!history || !Array.isArray(history.days)) {
-    root.textContent = "No training history yet.";
-    return;
+  dateEl.textContent = `Date: ${data.date || "n/a"}`;
+
+  if (data.dataset) {
+    const ds = data.dataset;
+    dsEl.textContent = `Dataset: ${ds.path} (${ds.rows} rows, ${ds.features} features)`;
   }
 
-  history.days.forEach((day) => {
-    const dayBlock = document.createElement("div");
-    dayBlock.className = "oh-timeline-day";
-
-    const dateLabel = document.createElement("div");
-    dateLabel.className = "oh-timeline-date";
-    dateLabel.textContent = day.date || "Unknown date";
-
-    const itemsWrap = document.createElement("div");
-    itemsWrap.className = "oh-timeline-items";
-
-    (day.events || []).forEach((ev) => {
-      const item = document.createElement("div");
-      const cls = ["oh-timeline-item"];
-      if (ev.severity === "good") cls.push("oh-timeline-item--positive");
-      if (ev.severity === "bad") cls.push("oh-timeline-item--negative");
-      item.className = cls.join(" ");
-
-      const badge = document.createElement("span");
-      badge.className = "oh-timeline-badge";
-      badge.textContent = (ev.type || "event").toUpperCase();
-
-      const text = document.createElement("span");
-      text.textContent = " " + (ev.message || "");
-
-      item.appendChild(badge);
-      item.appendChild(text);
-      itemsWrap.appendChild(item);
-    });
-
-    dayBlock.appendChild(dateLabel);
-    dayBlock.appendChild(itemsWrap);
-    root.appendChild(dayBlock);
+  modelsList.innerHTML = "";
+  (data.models || []).forEach((m) => {
+    const li = document.createElement("li");
+    const acc = m.accuracy != null ? (m.accuracy * 100).toFixed(1) + "%" : "n/a";
+    const auc = m.auc != null ? m.auc.toFixed(3) : "n/a";
+    li.textContent = `${m.name} — acc ${acc} • AUC ${auc}`;
+    modelsList.appendChild(li);
   });
 }
 
-function renderVersionHistory(versions) {
-  const root = document.getElementById("version-history");
-  root.innerHTML = "";
+function renderModelsDeployed(data) {
+  const tbody = document.querySelector("#models-table tbody");
+  if (!data || !tbody) return;
 
-  if (!versions || !Array.isArray(versions.models)) {
-    root.textContent = "No deployment history yet.";
-    return;
-  }
-
-  versions.models.forEach((row) => {
-    const item = document.createElement("div");
-    item.className = "oh-version-item";
-
-    const left = document.createElement("div");
-    left.className = "oh-version-left";
-
-    const label = document.createElement("div");
-    label.className = "oh-version-label";
-    label.textContent = row.model_name || row.id || "Unknown model";
-
-    const ver = document.createElement("div");
-    ver.textContent = "v" + (row.version || "0");
-
-    left.appendChild(label);
-    left.appendChild(ver);
-
-    const tag = document.createElement("div");
-    let cls = "oh-version-tag";
-    if (row.status === "improved") cls += " oh-version-tag--improved";
-    if (row.status === "fallback") cls += " oh-version-tag--fallback";
-    tag.className = cls;
-    tag.textContent = row.status || "stable";
-
-    item.appendChild(left);
-    item.appendChild(tag);
-    root.appendChild(item);
+  tbody.innerHTML = "";
+  (data.models || []).forEach((m) => {
+    const acc = m.accuracy != null ? (m.accuracy * 100).toFixed(1) + "%" : "n/a";
+    const auc = m.auc != null ? m.auc.toFixed(3) : "n/a";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${m.market}</td>
+      <td>${m.version}</td>
+      <td>${m.file}</td>
+      <td>${acc}</td>
+      <td>${auc}</td>
+    `;
+    tbody.appendChild(tr);
   });
 }
 
-function buildLineDataset(label, color, data) {
-  return {
-    label,
-    data,
-    tension: 0.35,
-    fill: false,
-    borderColor: color,
-    pointRadius: 0,
-    borderWidth: 2
-  };
+function renderAccuracy(data) {
+  const tbody = document.querySelector("#accuracy-table tbody");
+  if (!data || !tbody) return;
+
+  tbody.innerHTML = "";
+  (data.points || []).forEach((p) => {
+    const tr = document.createElement("tr");
+    const over25 = p.over25 != null ? (p.over25 * 100).toFixed(1) + "%" : "n/a";
+    const btts = p.btts != null ? (p.btts * 100).toFixed(1) + "%" : "n/a";
+    const corners = p.corners_over95 != null ? (p.corners_over95 * 100).toFixed(1) + "%" : "n/a";
+    const cards = p.cards_over35 != null ? (p.cards_over35 * 100).toFixed(1) + "%" : "n/a";
+
+    tr.innerHTML = `
+      <td>${p.date}</td>
+      <td>${over25}</td>
+      <td>${btts}</td>
+      <td>${corners}</td>
+      <td>${cards}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
-function renderCharts(accuracyHistory, aucHistory) {
-  const accCtx = document.getElementById("accuracyChart").getContext("2d");
-  const aucCtx = document.getElementById("aucChart").getContext("2d");
+async function initHub() {
+  ensureLayout();
+  try {
+    const [status, lastTraining, models, accuracy] = await Promise.all([
+      fetchJSON("status"),
+      fetchJSON("last_training"),
+      fetchJSON("models_deployed"),
+      fetchJSON("accuracy_30d"),
+    ]);
 
-  const labels = accuracyHistory?.dates || [];
-  const accSeries = accuracyHistory?.series || {};
-  const aucSeries = aucHistory?.series || {};
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: {
-          color: "#e5e7eb",
-          font: { size: 10 }
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: "#9ca3af", maxRotation: 0, autoSkip: true },
-        grid: { color: "rgba(55,65,81,0.4)" }
-      },
-      y: {
-        ticks: { color: "#9ca3af", callback: (v) => v + "" },
-        grid: { color: "rgba(55,65,81,0.4)" }
-      }
+    renderStatus(status);
+    renderLastTraining(lastTraining);
+    renderModelsDeployed(models);
+    renderAccuracy(accuracy);
+  } catch (err) {
+    console.error("Oracle Hub load error:", err);
+    const statusText = document.getElementById("status-text");
+    if (statusText) {
+      statusText.textContent = "Error loading metrics. Check GitHub Pages + /metrics/*.json";
     }
-  };
-
-  new Chart(accCtx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        buildLineDataset("Over 2.5", "#a855ff", accSeries.over25 || []),
-        buildLineDataset("BTTS", "#22c55e", accSeries.btts || []),
-        buildLineDataset("Corners 9.5+", "#38bdf8", accSeries.corners_over95 || []),
-        buildLineDataset("Cards 3.5+", "#f97316", accSeries.cards_over35 || [])
-      ]
-    },
-    options: chartOptions
-  });
-
-  new Chart(aucCtx, {
-    type: "line",
-    data: {
-      labels: aucHistory?.dates || labels,
-      datasets: [
-        buildLineDataset("Over 2.5", "#a855ff", (aucSeries.over25 || []).map(x => x)),
-        buildLineDataset("BTTS", "#22c55e", (aucSeries.btts || []).map(x => x)),
-        buildLineDataset("Corners 9.5+", "#38bdf8", (aucSeries.corners_over95 || []).map(x => x)),
-        buildLineDataset("Cards 3.5+", "#f97316", (aucSeries.cards_over35 || []).map(x => x))
-      ]
-    },
-    options: chartOptions
-  });
+  }
 }
 
-async function initOracleHub() {
-  const base = "https://dannythehat.github.io/oracle-hub/metrics";
-
-  const [status, acc, auc, history, versions] = await Promise.all([
-    loadJSON(base + "/system_status.json"),
-    loadJSON(base + "/accuracy.json"),
-    loadJSON(base + "/auc.json"),
-    loadJSON(base + "/training_history.json"),
-    loadJSON(base + "/model_versions.json")
-  ]);
-
-  setSystemStatus(status);
-  renderBabyCards(acc, auc);
-  renderTimeline(history);
-  renderVersionHistory(versions);
-  renderCharts(acc?.history || null, auc?.history || null);
-}
-
-document.addEventListener("DOMContentLoaded", initOracleHub);
+document.addEventListener("DOMContentLoaded", initHub);
