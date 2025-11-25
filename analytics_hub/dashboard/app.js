@@ -1,4 +1,4 @@
-ï»¿async function loadJSON(path) {
+async function loadJSON(path) {
   try {
     const res = await fetch(path);
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -26,15 +26,15 @@ function setSystemStatus(status) {
   if (status.system_status === "online") {
     dot.style.background = "#22c55e";
     dot.style.boxShadow = "0 0 10px rgba(34, 197, 94, 0.9)";
-    text.textContent = "Online Â· " + (status.environment || "prod");
+    text.textContent = "Online · " + (status.environment || "prod");
   } else {
     dot.style.background = "#f97316";
     dot.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.9)";
     text.textContent = status.system_status || "Degraded";
   }
 
-  lastTraining.textContent = status.last_training || "â€“";
-  modelsDeployed.textContent = status.models_deployed ?? "â€“";
+  lastTraining.textContent = status.last_training || "–";
+  modelsDeployed.textContent = status.models_deployed ?? "–";
   if (status.next_training_utc) {
     nextTraining.textContent = status.next_training_utc + " UTC";
   }
@@ -67,11 +67,11 @@ function renderBabyCards(accuracyData, aucData) {
       <div class="oh-baby-metrics">
         <div>
           <div class="oh-baby-metric-label">Accuracy</div>
-          <div class="oh-baby-metric-value">${acc != null ? (acc * 100).toFixed(1) + "%" : "â€“"}</div>
+          <div class="oh-baby-metric-value">${acc != null ? (acc * 100).toFixed(1) + "%" : "–"}</div>
         </div>
         <div>
           <div class="oh-baby-metric-label">AUC</div>
-          <div class="oh-baby-metric-value">${auc != null ? auc.toFixed(3) : "â€“"}</div>
+          <div class="oh-baby-metric-value">${auc != null ? auc.toFixed(3) : "–"}</div>
         </div>
       </div>
       <div class="oh-baby-chip-row">
@@ -241,7 +241,7 @@ function renderCharts(accuracyHistory, aucHistory) {
 }
 
 async function initOracleHub() {
-  const base = "../metrics";
+  const base = "https://dannythehat.github.io/oracle-hub/metrics";
 
   const [status, acc, auc, history, versions] = await Promise.all([
     loadJSON(base + "/system_status.json"),
