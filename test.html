@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Hub - Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #2d5016;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background: #5d1616;
+            border: 1px solid #f44336;
+        }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Oracle Hub - Debug Test</h1>
+    <p>Testing metrics file accessibility...</p>
+    
+    <div id="results"></div>
+    
+    <script>
+        const base = "https://dannythehat.github.io/oracle-hub/metrics";
+        const files = ["status", "last_training", "models_deployed", "accuracy_30d"];
+        const results = document.getElementById("results");
+        
+        async function testFile(name) {
+            const div = document.createElement("div");
+            div.className = "test-result";
+            
+            try {
+                const url = base + "/" + name + ".json?t=" + Date.now();
+                const res = await fetch(url);
+                
+                if (!res.ok) {
+                    throw new Error("HTTP " + res.status);
+                }
+                
+                const data = await res.json();
+                
+                div.className += " success";
+                div.innerHTML = "<strong>✅ " + name + ".json</strong><br>" +
+                    "Status: " + res.status + "<br>" +
+                    "Size: " + JSON.stringify(data).length + " bytes<br>" +
+                    "<pre>" + JSON.stringify(data, null, 2).substring(0, 200) + "...</pre>";
+            } catch (e) {
+                div.className += " error";
+                div.innerHTML = "<strong>❌ " + name + ".json</strong><br>" +
+                    "Error: " + e.message;
+            }
+            
+            results.appendChild(div);
+        }
+        
+        async function runTests() {
+            for (const file of files) {
+                await testFile(file);
+            }
+            
+            // Test if we can create DOM elements
+            const testDiv = document.createElement("div");
+            testDiv.id = "test-element";
+            testDiv.textContent = "Test";
+            document.body.appendChild(testDiv);
+            
+            const found = document.getElementById("test-element");
+            const domTest = document.createElement("div");
+            domTest.className = "test-result " + (found ? "success" : "error");
+            domTest.innerHTML = "<strong>" + (found ? "✅" : "❌") + " DOM Manipulation</strong><br>" +
+                "Can create and find elements: " + (found ? "YES" : "NO");
+            results.appendChild(domTest);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
