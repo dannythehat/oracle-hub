@@ -1,219 +1,123 @@
 const base = "https://dannythehat.github.io/oracle-hub/metrics";
 
 async function fetchJSON(name) {
-  const url = base + "/" + name + ".json?cacheBust=" + Date.now();
-  console.log("Fetching:", url);
+  const url = base + "/" + name + ".json?t=" + Date.now();
   const res = await fetch(url);
-  if (!res.ok) {
-    console.error("Failed to load " + name + ", status:", res.status);
-    throw new Error("Failed to load " + name);
-  }
-  const data = await res.json();
-  console.log("Loaded " + name + ":", data);
-  return data;
+  if (!res.ok) throw new Error("Failed to load " + name);
+  return res.json();
 }
 
-function ensureLayout() {
-  console.log("ensureLayout called");
-  let root = document.getElementById("oracle-root");
-  if (root) {
-    console.log("oracle-root already exists, clearing it");
-    root.innerHTML = "";
-  } else {
-    console.log("Creating oracle-root");
-    root = document.createElement("div");
-    root.id = "oracle-root";
-    root.className = "oracle-root";
-    document.body.appendChild(root);
-  }
-
+function buildHTML(status, training, models, accuracy) {
   let html = "";
+  
+  // Header
   html += "<header class='hub-header'>";
   html += "<h1>Footy Oracle - LM Training Hub</h1>";
   html += "<p class='subtitle'>Live v27 Anti Leak Models</p>";
   html += "</header>";
-
+  
   html += "<main class='hub-main'>";
-
-  html += "<section class='card' id='status-card'>";
+  
+  // Status Card
+  html += "<section class='card'>";
   html += "<h2>System Status</h2>";
-  html += "<p id='status-text'>Loading...</p>";
-  html += "<ul id='status-notes'></ul>";
+  html += "<p><strong>" + status.overall_status.toUpperCase() + "</strong> - last training " + status.last_training + "</p>";
+  html += "<ul>";
+  status.notes.forEach(function(note) {
+    html += "<li>" + note + "</li>";
+  });
+  html += "</ul>";
   html += "</section>";
-
-  html += "<section class='card' id='training-card'>";
+  
+  // Training Card
+  html += "<section class='card'>";
   html += "<h2>Last Training Run</h2>";
-  html += "<p id='last-training-date'>Loading...</p>";
-  html += "<p id='last-training-dataset'>Loading...</p>";
-  html += "<ul id='last-training-models'></ul>";
+  html += "<p><strong>Date:</strong> " + training.date + "</p>";
+  html += "<p><strong>Dataset:</strong> " + training.dataset.path + " (" + training.dataset.rows + " rows, " + training.dataset.features + " features)</p>";
+  html += "<ul>";
+  training.models.forEach(function(m) {
+    html += "<li>" + m.name + " - acc " + (m.accuracy * 100).toFixed(1) + "% - AUC " + m.auc.toFixed(3) + "</li>";
+  });
+  html += "</ul>";
   html += "</section>";
-
-  html += "<section class='card' id='models-card'>";
+  
+  // Models Card
+  html += "<section class='card'>";
   html += "<h2>Models Deployed (v27)</h2>";
-  html += "<table id='models-table'><thead><tr>";
+  html += "<table><thead><tr>";
   html += "<th>Market</th><th>Version</th><th>PKL</th><th>Accuracy</th><th>AUC</th>";
-  html += "</tr></thead><tbody></tbody></table>";
+  html += "</tr></thead><tbody>";
+  models.models.forEach(function(m) {
+    html += "<tr>";
+    html += "<td>" + m.market + "</td>";
+    html += "<td>" + m.version + "</td>";
+    html += "<td>" + m.file + "</td>";
+    html += "<td>" + (m.accuracy * 100).toFixed(1) + "%</td>";
+    html += "<td>" + m.auc.toFixed(3) + "</td>";
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
   html += "</section>";
-
-  html += "<section class='card' id='accuracy-card'>";
+  
+  // Accuracy Card
+  html += "<section class='card'>";
   html += "<h2>Last 30 Days - Accuracy</h2>";
-  html += "<table id='accuracy-table'><thead><tr>";
+  html += "<table><thead><tr>";
   html += "<th>Date</th><th>Over 2.5</th><th>BTTS</th><th>Corners 9.5</th><th>Cards 3.5</th>";
-  html += "</tr></thead><tbody></tbody></table>";
+  html += "</tr></thead><tbody>";
+  accuracy.points.forEach(function(p) {
+    html += "<tr>";
+    html += "<td>" + p.date + "</td>";
+    html += "<td>" + (p.over25 * 100).toFixed(1) + "%</td>";
+    html += "<td>" + (p.btts * 100).toFixed(1) + "%</td>";
+    html += "<td>" + (p.corners_over95 * 100).toFixed(1) + "%</td>";
+    html += "<td>" + (p.cards_over35 * 100).toFixed(1) + "%</td>";
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
   html += "</section>";
-
+  
   html += "</main>";
-
-  root.innerHTML = html;
-  console.log("Layout created and inserted into DOM");
-  return root;
-}
-
-function renderStatus(data) {
-  console.log("renderStatus called with:", data);
-  if (!data) {
-    console.error("No status data");
-    return;
-  }
   
-  let statusText = document.getElementById("status-text");
-  let notesList = document.getElementById("status-notes");
-  
-  if (!statusText) {
-    console.error("status-text element not found!");
-    return;
-  }
-  if (!notesList) {
-    console.error("status-notes element not found!");
-    return;
-  }
-  
-  statusText.textContent = data.overall_status.toUpperCase() + " - last training " + data.last_training;
-  notesList.innerHTML = "";
-  (data.notes || []).forEach(function(n) {
-    let li = document.createElement("li");
-    li.textContent = n;
-    notesList.appendChild(li);
-  });
-  console.log("Status rendered successfully");
-}
-
-function renderLastTraining(data) {
-  console.log("renderLastTraining called with:", data);
-  if (!data) {
-    console.error("No training data");
-    return;
-  }
-  
-  let dateEl = document.getElementById("last-training-date");
-  let datasetEl = document.getElementById("last-training-dataset");
-  let listEl = document.getElementById("last-training-models");
-  
-  if (!dateEl || !datasetEl || !listEl) {
-    console.error("Training elements not found!", {dateEl: !!dateEl, datasetEl: !!datasetEl, listEl: !!listEl});
-    return;
-  }
-  
-  dateEl.textContent = "Date: " + data.date;
-  let ds = data.dataset;
-  datasetEl.textContent = "Dataset: " + ds.path + " (" + ds.rows + " rows, " + ds.features + " features)";
-  
-  listEl.innerHTML = "";
-  data.models.forEach(function(m) {
-    let li = document.createElement("li");
-    li.textContent = m.name + " - acc " + (m.accuracy * 100).toFixed(1) + "% - AUC " + m.auc.toFixed(3);
-    listEl.appendChild(li);
-  });
-  console.log("Training data rendered successfully");
-}
-
-function renderModelsDeployed(data) {
-  console.log("renderModelsDeployed called with:", data);
-  if (!data || !data.models) {
-    console.error("No models data");
-    return;
-  }
-  
-  let tbody = document.querySelector("#models-table tbody");
-  if (!tbody) {
-    console.error("models-table tbody not found!");
-    return;
-  }
-  
-  tbody.innerHTML = "";
-  data.models.forEach(function(m) {
-    let tr = document.createElement("tr");
-    tr.innerHTML =
-      "<td>" + m.market + "</td><td>" + m.version + "</td><td>" + m.file + "</td>" +
-      "<td>" + (m.accuracy * 100).toFixed(1) + "%</td><td>" + m.auc.toFixed(3) + "</td>";
-    tbody.appendChild(tr);
-  });
-  console.log("Models rendered successfully");
-}
-
-function renderAccuracy(data) {
-  console.log("renderAccuracy called with:", data);
-  if (!data || !data.points) {
-    console.error("No accuracy data");
-    return;
-  }
-  
-  let tbody = document.querySelector("#accuracy-table tbody");
-  if (!tbody) {
-    console.error("accuracy-table tbody not found!");
-    return;
-  }
-  
-  tbody.innerHTML = "";
-  data.points.forEach(function(p) {
-    let tr = document.createElement("tr");
-    tr.innerHTML =
-      "<td>" + p.date + "</td>" +
-      "<td>" + (p.over25 * 100).toFixed(1) + "%</td>" +
-      "<td>" + (p.btts * 100).toFixed(1) + "%</td>" +
-      "<td>" + (p.corners_over95 * 100).toFixed(1) + "%</td>" +
-      "<td>" + (p.cards_over35 * 100).toFixed(1) + "%</td>";
-    tbody.appendChild(tr);
-  });
-  console.log("Accuracy rendered successfully");
+  return html;
 }
 
 async function initHub() {
-  console.log("initHub starting...");
   try {
-    console.log("Creating layout...");
-    ensureLayout();
+    // Show loading
+    document.body.innerHTML = "<div style='text-align:center;padding:50px;color:#fff;'>Loading Oracle Hub...</div>";
     
-    console.log("Waiting for DOM to be ready...");
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    console.log("Fetching all data...");
+    // Fetch all data
     const status = await fetchJSON("status");
-    const last = await fetchJSON("last_training");
+    const training = await fetchJSON("last_training");
     const models = await fetchJSON("models_deployed");
-    const acc = await fetchJSON("accuracy_30d");
+    const accuracy = await fetchJSON("accuracy_30d");
     
-    console.log("All data fetched, rendering...");
-    renderStatus(status);
-    renderLastTraining(last);
-    renderModelsDeployed(models);
-    renderAccuracy(acc);
+    // Build complete HTML
+    const html = buildHTML(status, training, models, accuracy);
     
-    console.log("Hub initialized successfully!");
+    // Create root and insert
+    const root = document.createElement("div");
+    root.id = "oracle-root";
+    root.className = "oracle-root";
+    root.innerHTML = html;
+    
+    // Replace body content
+    document.body.innerHTML = "";
+    document.body.appendChild(root);
+    
   } catch (e) {
+    document.body.innerHTML = "<div style='text-align:center;padding:50px;color:#f44336;'>" +
+      "<h1>Hub Error</h1>" +
+      "<p>" + e.message + "</p>" +
+      "<p>Check browser console for details</p>" +
+      "</div>";
     console.error("Hub Error:", e);
-    console.error("Stack:", e.stack);
-    alert("Hub Error: " + e.message + " - Check console for details");
   }
 }
 
-console.log("Script loaded, waiting for DOMContentLoaded...");
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", function() {
-    console.log("DOMContentLoaded fired!");
-    initHub();
-  });
+  document.addEventListener("DOMContentLoaded", initHub);
 } else {
-  console.log("DOM already loaded, initializing immediately");
   initHub();
 }
